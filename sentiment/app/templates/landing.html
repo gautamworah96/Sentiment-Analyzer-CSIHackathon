@@ -1,0 +1,202 @@
+
+
+{% extends "bootstrap/base.html" %}
+
+
+{% block scripts %}
+	{{ super() }}
+{% endblock %}
+
+
+{% block title %}Applicant Home{% endblock %}
+
+{% block content %}
+	<style>
+		#item-name-error,#item-quantity-error{
+
+			color:red;
+		}
+		/*form {
+    		width: 90%;
+    		margin: 10px auto;
+    		padding: 10px 20px;
+    		background: #f4f7f8;
+		}*/
+
+		.item-select-head,.request-container{
+			width: 90%;
+    		margin: 10px auto;
+    		padding: 10px 20px;
+    		background: #f4f7f8;
+		}
+
+		#applicant_request{
+
+			margin-top:30px;	
+		}
+
+		th,td{
+			text-align:center;
+			
+		}
+
+		hr{
+			background-color:#555;
+			height:2px;
+			
+		}
+
+	</style>
+	<div class="container">
+		<div>
+			<h2>Sentiment Analyzer</h2>
+		</div>
+		<hr>
+
+		<div class="row">
+			<div class="col-md-12 text-center">
+
+				<button id="start" type="button" class="btn btn-primary">START</button>
+				<button id="stop" type="button" class="btn btn-danger">STOP</button>
+					
+			</div><!-- end of bootstrap column -->
+
+			<!--<div class="col-md-1 center-block">
+				
+			</div>-->
+		</div><!-- end of bootstrap row -->
+
+		<br>
+		
+		<div class="row">
+			<div class="col-md-offset-2 col-md-8">
+
+				<div class="progress">
+					<div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+aria-valuemax="100" style="width: 0; color: black; height: 30px;" id="average_value"></div>
+
+				</div>
+			</div>
+		</div>
+			
+
+
+		<div class="row">
+			<div class="col-md-offset-4 col-md-4">
+				 <a class="twitter-timeline"  href="https://twitter.com/hashtag/SPITElection" data-widget-id="820531055300059136">#SPITElection Tweets</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+		
+			</div>
+	
+		</div>
+
+
+
+		
+	</div>
+	
+	
+
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+	
+	<script>
+			//console.log("98");
+		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		$(function(){ repeat();
+				var interval = null;				
+			
+				$('#start').on('click',function(){
+					$.getJSON(
+           				 $SCRIPT_ROOT+"/start", // Your AJAX route here
+            			function(data) {
+                			$('#average_value').text("");
+							
+							interval = setInterval(repeat, 2000);
+							console.log(interval);
+            		}
+        		);
+        						
+				});
+
+				$('#stop').on('click',function(){
+					$.getJSON(
+           				 $SCRIPT_ROOT+"/stop", // Your AJAX route here
+            			function(data) {
+                			$('#average_value').text(""); 
+							$("#average_value").animate({width:next+"%"},"slow");
+							console.log(interval);
+							clearInterval(interval);
+            		}
+        		);
+        						
+				});
+
+					
+
+				var prev = 0;
+				var next = 0;
+
+				function repeat(){
+					$.getJSON(
+           				 $SCRIPT_ROOT+"/update", // Your AJAX route here
+            			function(data) {
+								next = data;
+									
+
+						
+                				if(data == 0){
+									
+									$('#average_value').text("");
+								}
+								else if(data < 35){
+									
+									
+
+									$('#average_value').text("Poor response");
+									$('#average_value').removeClass("progress-bar-success");
+									$('#average_value').removeClass("progress-bar-warning");
+								    $('#average_value').addClass("progress-bar-danger");
+								    
+								}
+								else if(data < 65){
+									$('#average_value').text("Average response");
+									$('#average_value').removeClass("progress-bar-success");
+									$('#average_value').removeClass("progress-bar-danger");
+								    $('#average_value').addClass("progress-bar-warning");
+								    
+								}
+								else if(data <= 100){
+				
+									if(data<=80){
+										$('#average_value').text("Good response");
+									}
+									else{
+										$('#average_value').text("Excellent response");
+	
+									}
+									$('#average_value').removeClass("progress-bar-danger");
+									$('#average_value').removeClass("progress-bar-warning");
+								    $('#average_value').addClass("progress-bar-success");
+								    
+								}
+								console.log(data);
+
+								if(next!=prev){
+									prev = next;
+									$("#average_value").animate({width:next+"%"},"slow");
+								}		
+									});
+
+								}
+
+		
+		
+			});
+			
+	</script>
+
+{% endblock %}
+
